@@ -8,7 +8,7 @@ const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
 const NOTION_API_KEY = process.env.NOTION_API_KEY || "";
-const NOTION_DATABASE_ID = (process.env.NOTION_DATABASE_ID || "").replace(/-/g, "");
+const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || "";
 const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
