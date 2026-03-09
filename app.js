@@ -111,6 +111,10 @@ async function fetchNotionProducts() {
       body: JSON.stringify({ page_size: 100 }),
       signal: controller.signal,
     });
+  } catch (fetchError) {
+    clearTimeout(timeout);
+    console.error("Erro de rede ao chamar Notion:", fetchError);
+    throw new Error(`Falha de rede: ${fetchError.message}`);
   } finally {
     clearTimeout(timeout);
   }
@@ -154,6 +158,7 @@ app.get("/api/products", async (_, res) => {
     res.setHeader("Cache-Control", "no-store");
     res.status(200).json(data);
   } catch (error) {
+    console.error("Erro completo da API:", error);
     res.status(500).json({
       configured: true,
       products: [],
@@ -161,6 +166,20 @@ app.get("/api/products", async (_, res) => {
       details: String(error.message || error),
     });
   }
+});
+
+app.get("/api/debug", async (_, res) => {
+  const hasApiKey = !!NOTION_API_KEY && NOTION_API_KEY !== "";
+  const hasDatabaseId = !!NOTION_DATABASE_ID && NOTION_DATABASE_ID !== "";
+  
+  res.status(200).json({
+    hasApiKey,
+    apiKeyLength: NOTION_API_KEY ? NOTION_API_KEY.length : 0,
+    hasDatabaseId,
+    databaseIdLength: NOTION_DATABASE_ID ? NOTION_DATABASE_ID.length : 0,
+    notionVersion: NOTION_VERSION,
+    whatsappConfigured: !!WHATSAPP_LOJA,
+  });
 });
 
 app.use(express.static(process.cwd()));
