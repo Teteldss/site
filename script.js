@@ -56,10 +56,10 @@ const selectedTotal = document.getElementById("selected-total");
 const selectedList = document.getElementById("selected-list");
 const sendButton = document.getElementById("send-whatsapp");
 const customerName = document.getElementById("customer-name");
-const customerPhone = document.getElementById("customer-phone");
 const notes = document.getElementById("notes");
 const template = document.getElementById("product-card-template");
 let products = [];
+let WHATSAPP_LOJA = "5511999999999";
 
 function renderGallery() {
   const fragment = document.createDocumentFragment();
@@ -122,12 +122,18 @@ async function loadProducts() {
 
     if (!payload.configured) {
       products = [...fallbackProducts];
+      if (payload.whatsapp) {
+        WHATSAPP_LOJA = payload.whatsapp;
+      }
       renderStatus("Notion nao configurado ainda. Exibindo produtos locais de exemplo.");
       return;
     }
 
     if (Array.isArray(payload.products) && payload.products.length > 0) {
       products = payload.products;
+      if (payload.whatsapp) {
+        WHATSAPP_LOJA = payload.whatsapp;
+      }
       renderStatus("Produtos carregados do Notion.");
       return;
     }
@@ -174,42 +180,39 @@ function buildMessage() {
   const total = items.reduce((sum, item) => sum + item.price, 0);
   const lines = [];
 
-  lines.push("Oi! Quero finalizar minha compra:");
+  lines.push("Oi! Quero fazer um pedido:");
   lines.push("");
 
-  items.forEach((item, index) => {
-    lines.push(`${index + 1}. ${item.name} - ${brl.format(item.price)}`);
-  });
+  if (items.length > 0) {
+    lines.push("Itens:");
+    items.forEach((item, index) => {
+      lines.push(`${index + 1}. ${item.name} - ${brl.format(item.price)}`);
+    });
+    lines.push("");
+  }
 
-  lines.push("");
   lines.push(`Total: ${brl.format(total)}`);
+  lines.push("");
 
   if (customerName.value.trim()) {
     lines.push(`Nome: ${customerName.value.trim()}`);
   }
 
   if (notes.value.trim()) {
-    lines.push(`Observacoes: ${notes.value.trim()}`);
+    lines.push(`Obs: ${notes.value.trim()}`);
   }
 
   return lines.join("\n");
 }
 
-function sanitizePhone(value) {
-  return value.replace(/\D/g, "");
-}
-
 sendButton.addEventListener("click", () => {
-  const phone = sanitizePhone(customerPhone.value);
-
-  if (!phone) {
-    customerPhone.focus();
-    alert("Informe o numero de WhatsApp da loja com DDI e DDD.");
+  if (selected.size === 0) {
+    alert("Selecione pelo menos um item antes de enviar.");
     return;
   }
 
   const message = buildMessage();
-  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${WHATSAPP_LOJA}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 });
 

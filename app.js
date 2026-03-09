@@ -12,6 +12,7 @@ const NOTION_DATABASE_ID = (process.env.NOTION_DATABASE_ID || "").replace(/-/g, 
 const NOTION_VERSION = process.env.NOTION_VERSION || "2022-06-28";
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 8000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
+const WHATSAPP_LOJA = process.env.WHATSAPP_LOJA || "5511999999999";
 
 let productsCache = {
   expiresAt: 0,
@@ -85,6 +86,7 @@ async function fetchNotionProducts() {
     return {
       configured: false,
       products: [],
+      whatsapp: WHATSAPP_LOJA,
       note: "Defina NOTION_API_KEY e NOTION_DATABASE_ID para habilitar a integracao.",
     };
   }
@@ -127,6 +129,7 @@ async function fetchNotionProducts() {
     configured: true,
     mappingHint: PRODUCT_MAPPING_HELP,
     products,
+    whatsapp: WHATSAPP_LOJA,
   };
 
   productsCache = {

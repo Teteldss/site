@@ -21,6 +21,7 @@ Variaveis no `.env`:
 - `NOTION_API_KEY`: token de integracao interna do Notion.
 - `NOTION_DATABASE_ID`: id do database de produtos.
 - `NOTION_VERSION`: versao da API (padrao `2022-06-28`).
+- `WHATSAPP_LOJA`: numero WhatsApp da loja com DDI e DDD (ex: 5511999999999).
 - `PORT`: porta local (padrao `3000`).
 
 No banco do Notion, use propriedades com estes nomes (ou variacoes ja mapeadas):
@@ -35,7 +36,7 @@ Se Notion nao estiver configurado, o site usa produtos locais de fallback automa
 
 ## Personalizacao rapida
 
-- Numero da loja: altere o valor inicial do campo `customer-phone` em `index.html`.
+- Numero da loja: configure a variavel `WHATSAPP_LOJA` no `.env` (formato: DDI + DDD + numero, ex: 5511999999999).
 - Produtos fallback: edite `fallbackProducts` em `script.js`.
 - Visual: ajuste cores e espacamentos em `styles.css` (variaveis em `:root`).
 
@@ -51,6 +52,7 @@ Use hospedagem com suporte a Node.js (normalmente VPS ou plano com Node habilita
 	- `NOTION_VERSION`
 	- `NOTION_TIMEOUT_MS`
 	- `PRODUCTS_CACHE_TTL_MS`
+	- `WHATSAPP_LOJA`
 	- `PORT`
 4. Inicie com `npm start` (ou via PM2).
 5. Aponte o dominio para a porta da aplicacao com proxy reverso (Nginx/Apache).
