@@ -16,7 +16,7 @@ function normalizeNotionDatabaseId(value) {
 const PORT = Number(process.env.PORT || 3000);
 const NOTION_API_KEY = process.env.NOTION_API_KEY || "";
 const NOTION_DATABASE_ID = normalizeNotionDatabaseId(process.env.NOTION_DATABASE_ID || "");
-const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
+const NOTION_VERSION = (process.env.NOTION_VERSION || "2022-06-28").trim();
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
 const WHATSAPP_LOJA = String(process.env.WHATSAPP_LOJA || "55119997635107").replace(/\D/g, "");
@@ -88,6 +88,51 @@ function mapNotionProduct(page) {
   };
 }
 
+function isInvalidRequestUrl(status, details) {
+  return status === 400 && /invalid_request_url/i.test(String(details || ""));
+}
+
+async function queryNotion(url, notionVersion) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), NOTION_TIMEOUT_MS);
+
+  let response;
+
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${NOTION_API_KEY}`,
+        "Notion-Version": notionVersion,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ page_size: 100 }),
+      signal: controller.signal,
+    });
+  } catch (fetchError) {
+    clearTimeout(timeout);
+    return {
+      ok: false,
+      status: 0,
+      details: `Falha de rede: ${fetchError.message}`,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  if (!response.ok) {
+    const details = await response.text();
+    return {
+      ok: false,
+      status: response.status,
+      details,
+    };
+  }
+
+  const payload = await response.json();
+  return { ok: true, payload };
+}
+
 async function fetchNotionProducts() {
   if (!NOTION_API_KEY || !NOTION_DATABASE_ID) {
     return {
@@ -102,45 +147,67 @@ async function fetchNotionProducts() {
     return productsCache.data;
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), NOTION_TIMEOUT_MS);
+  const databaseUrl = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
+  const dataSourceUrl = `https://api.notion.com/v1/data-sources/${NOTION_DATABASE_ID}/query`;
+  const versionsToTry = Array.from(new Set([NOTION_VERSION, "2022-06-28"]));
 
-  const url = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
-  
-  console.log("Chamando Notion API:", {
-    url,
-    databaseIdLength: NOTION_DATABASE_ID.length,
+  let payload = null;
+  let lastError = {
+    status: 0,
+    details: "Falha desconhecida ao consultar Notion.",
+    url: databaseUrl,
     version: NOTION_VERSION,
-  });
+  };
 
-  let response;
-
-  try {
-    response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${NOTION_API_KEY}`,
-        "Notion-Version": NOTION_VERSION,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ page_size: 100 }),
-      signal: controller.signal,
+  for (const version of versionsToTry) {
+    console.log("Tentando Notion API (database):", {
+      url: databaseUrl,
+      databaseIdLength: NOTION_DATABASE_ID.length,
+      version,
     });
-  } catch (fetchError) {
-    clearTimeout(timeout);
-    console.error("Erro de rede ao chamar Notion:", fetchError);
-    throw new Error(`Falha de rede: ${fetchError.message}`);
-  } finally {
-    clearTimeout(timeout);
+
+    const databaseAttempt = await queryNotion(databaseUrl, version);
+    if (databaseAttempt.ok) {
+      payload = databaseAttempt.payload;
+      break;
+    }
+
+    lastError = {
+      status: databaseAttempt.status,
+      details: databaseAttempt.details,
+      url: databaseUrl,
+      version,
+    };
+
+    if (isInvalidRequestUrl(databaseAttempt.status, databaseAttempt.details)) {
+      console.log("Tentando Notion API (data-source fallback):", {
+        url: dataSourceUrl,
+        databaseIdLength: NOTION_DATABASE_ID.length,
+        version,
+      });
+
+      const dataSourceAttempt = await queryNotion(dataSourceUrl, version);
+      if (dataSourceAttempt.ok) {
+        payload = dataSourceAttempt.payload;
+        break;
+      }
+
+      lastError = {
+        status: dataSourceAttempt.status,
+        details: dataSourceAttempt.details,
+        url: dataSourceUrl,
+        version,
+      };
+    }
   }
 
-  if (!response.ok) {
-    const details = await response.text();
-    console.error(`Erro Notion API - Status: ${response.status}, Details: ${details}`);
-    throw new Error(`Erro Notion ${response.status}: ${details}`);
+  if (!payload) {
+    console.error("Erro Notion API:", lastError);
+    throw new Error(
+      `Erro Notion ${lastError.status} (${lastError.version}) em ${lastError.url}: ${lastError.details}`,
+    );
   }
 
-  const payload = await response.json();
   const products = (payload.results || [])
     .map(mapNotionProduct)
     .filter((p) => p.active && p.name && p.price > 0);
