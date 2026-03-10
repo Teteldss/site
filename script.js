@@ -105,9 +105,7 @@ function renderStatus(message) {
   if (!statusNode) {
     statusNode = document.createElement("p");
     statusNode.id = "data-status";
-    statusNode.style.margin = "0 0 12px";
-    statusNode.style.color = "#616161";
-    statusNode.style.fontSize = "0.9rem";
+    statusNode.className = "data-status";
     gallery.parentElement.insertBefore(statusNode, gallery);
   }
 
@@ -121,7 +119,6 @@ async function loadProducts() {
 
     if (payload.whatsapp) {
       WHATSAPP_LOJA = normalizeWhatsapp(payload.whatsapp) || WHATSAPP_LOJA;
-      console.log("WhatsApp atualizado:", WHATSAPP_LOJA);
     }
 
     if (!response.ok) {
@@ -138,12 +135,12 @@ async function loadProducts() {
 
     if (Array.isArray(payload.products) && payload.products.length > 0) {
       products = payload.products;
-      renderStatus("Produtos carregados do Notion.");
+      renderStatus("Nossos produtos");
       return;
     }
 
     products = [...fallbackProducts];
-    renderStatus("Nenhum produto ativo encontrado no Notion. Exibindo fallback local.");
+    renderStatus("Nossos produtos");
   } catch (error) {
     console.error("Erro ao carregar produtos:", error);
     products = [...fallbackProducts];
