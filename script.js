@@ -133,13 +133,13 @@ function renderGallery() {
       });
       img.addEventListener("error", () => {
         image.classList.add("img-loaded");
-        image.style.background = "linear-gradient(145deg, #ebeae8, #d9d8d4)";
+        image.style.background = "linear-gradient(145deg, #f5aabf, #e88aa5)";
       });
       img.src = product.image;
       image.appendChild(img);
     } else {
       image.classList.add("img-loaded");
-      image.style.background = product.image || "linear-gradient(145deg, #ebeae8, #d9d8d4)";
+      image.style.background = product.image || "linear-gradient(145deg, #f5aabf, #e88aa5)";
     }
 
     selectBtn.addEventListener("click", () => {
