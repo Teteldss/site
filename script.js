@@ -59,7 +59,11 @@ const customerName = document.getElementById("customer-name");
 const notes = document.getElementById("notes");
 const template = document.getElementById("product-card-template");
 let products = [];
-let WHATSAPP_LOJA = "5511999999999";
+let WHATSAPP_LOJA = "55119997635107";
+
+function normalizeWhatsapp(value) {
+  return String(value || "").replace(/\D/g, "");
+}
 
 function renderGallery() {
   const fragment = document.createDocumentFragment();
@@ -113,17 +117,17 @@ function renderStatus(message) {
 async function loadProducts() {
   try {
     const response = await fetch("/api/products");
+    const payload = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
-      throw new Error(`Falha HTTP ${response.status}`);
+    if (payload.whatsapp) {
+      WHATSAPP_LOJA = normalizeWhatsapp(payload.whatsapp) || WHATSAPP_LOJA;
+      console.log("WhatsApp atualizado:", WHATSAPP_LOJA);
     }
 
-    const payload = await response.json();
-
-    // SEMPRE atualizar o WhatsApp, independente do estado
-    if (payload.whatsapp) {
-      WHATSAPP_LOJA = payload.whatsapp;
-      console.log("WhatsApp atualizado:", WHATSAPP_LOJA);
+    if (!response.ok) {
+      products = [...fallbackProducts];
+      renderStatus("Erro ao carregar API. Exibindo produtos locais de exemplo.");
+      return;
     }
 
     if (!payload.configured) {
@@ -213,7 +217,8 @@ sendButton.addEventListener("click", () => {
   }
 
   const message = buildMessage();
-  const url = `https://wa.me/${WHATSAPP_LOJA}?text=${encodeURIComponent(message)}`;
+  const whatsappDestino = normalizeWhatsapp(WHATSAPP_LOJA);
+  const url = `https://wa.me/${whatsappDestino}?text=${encodeURIComponent(message)}`;
   window.open(url, "_blank", "noopener,noreferrer");
 });
 

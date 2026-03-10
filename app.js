@@ -6,13 +6,20 @@ dotenv.config();
 
 const app = express();
 
+function normalizeNotionDatabaseId(value) {
+  const raw = String(value || "").trim();
+  const onlyHex = raw.replace(/[^a-fA-F0-9]/g, "");
+  if (onlyHex.length !== 32) return raw;
+  return `${onlyHex.slice(0, 8)}-${onlyHex.slice(8, 12)}-${onlyHex.slice(12, 16)}-${onlyHex.slice(16, 20)}-${onlyHex.slice(20)}`;
+}
+
 const PORT = Number(process.env.PORT || 3000);
 const NOTION_API_KEY = process.env.NOTION_API_KEY || "";
-const NOTION_DATABASE_ID = (process.env.NOTION_DATABASE_ID || "").trim();
+const NOTION_DATABASE_ID = normalizeNotionDatabaseId(process.env.NOTION_DATABASE_ID || "");
 const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
-const WHATSAPP_LOJA = process.env.WHATSAPP_LOJA || "5511999999999";
+const WHATSAPP_LOJA = String(process.env.WHATSAPP_LOJA || "55119997635107").replace(/\D/g, "");
 
 let productsCache = {
   expiresAt: 0,
