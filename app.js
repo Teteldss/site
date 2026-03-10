@@ -22,9 +22,18 @@ function normalizeNotionDatabaseId(value) {
   return `${compactId.slice(0, 8)}-${compactId.slice(8, 12)}-${compactId.slice(12, 16)}-${compactId.slice(16, 20)}-${compactId.slice(20)}`;
 }
 
+function extractNotionDatabaseIds(value) {
+  const raw = String(value || "").trim();
+  const matches = raw.match(/[a-fA-F0-9]{32}|[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/g) || [];
+  const normalized = matches.map((id) => normalizeNotionDatabaseId(id)).filter(Boolean);
+  return Array.from(new Set(normalized));
+}
+
 const PORT = Number(process.env.PORT || 3000);
 const NOTION_API_KEY = process.env.NOTION_API_KEY || "";
-const NOTION_DATABASE_ID = normalizeNotionDatabaseId(process.env.NOTION_DATABASE_ID || "");
+const NOTION_DATABASE_ID_RAW = process.env.NOTION_DATABASE_ID || "";
+const NOTION_DATABASE_ID = normalizeNotionDatabaseId(NOTION_DATABASE_ID_RAW);
+const NOTION_DATABASE_ID_CANDIDATES = extractNotionDatabaseIds(NOTION_DATABASE_ID_RAW);
 const NOTION_VERSION = (process.env.NOTION_VERSION || "2025-09-03").trim();
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
@@ -97,14 +106,12 @@ function mapNotionProduct(page) {
   };
 }
 
-function shouldTryDataSourceFallback(status, details) {
+function isObjectNotFound(status, details) {
   const text = String(details || "");
-  const invalidUrl = status === 400 && /invalid_request_url/i.test(text);
-  const objectNotFound = status === 404 && /object_not_found/i.test(text);
-  return invalidUrl || objectNotFound;
+  return status === 404 && /object_not_found/i.test(text);
 }
 
-async function queryNotion(url, notionVersion) {
+async function queryNotion(url, notionVersion, bodyPayload = { page_size: 100 }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), NOTION_TIMEOUT_MS);
 
@@ -118,7 +125,7 @@ async function queryNotion(url, notionVersion) {
         "Notion-Version": notionVersion,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ page_size: 100 }),
+      body: JSON.stringify(bodyPayload),
       signal: controller.signal,
     });
   } catch (fetchError) {
@@ -145,6 +152,26 @@ async function queryNotion(url, notionVersion) {
   return { ok: true, payload };
 }
 
+async function searchAccessibleDatabases() {
+  const url = "https://api.notion.com/v1/search";
+  const response = await queryNotion(url, NOTION_VERSION, {
+    filter: { property: "object", value: "database" },
+    page_size: 20,
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return (response.payload.results || []).map((item) => {
+    const title = (item.title || []).map((t) => t.plain_text || "").join("").trim();
+    return {
+      id: item.id,
+      title: title || "(sem titulo)",
+    };
+  });
+}
+
 async function fetchNotionProducts() {
   if (!NOTION_API_KEY || !NOTION_DATABASE_ID) {
     return {
@@ -159,64 +186,61 @@ async function fetchNotionProducts() {
     return productsCache.data;
   }
 
-  const databaseUrl = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
-  const dataSourceUrl = `https://api.notion.com/v1/data-sources/${NOTION_DATABASE_ID}/query`;
+  const candidateIds = NOTION_DATABASE_ID_CANDIDATES.length
+    ? NOTION_DATABASE_ID_CANDIDATES
+    : [NOTION_DATABASE_ID];
   const versionsToTry = [NOTION_VERSION];
 
   let payload = null;
   let lastError = {
     status: 0,
     details: "Falha desconhecida ao consultar Notion.",
-    url: databaseUrl,
+    url: "",
     version: NOTION_VERSION,
   };
 
   for (const version of versionsToTry) {
-    console.log("Tentando Notion API (database):", {
-      url: databaseUrl,
-      databaseIdLength: NOTION_DATABASE_ID.length,
-      version,
-    });
+    for (const candidateId of candidateIds) {
+      const databaseUrl = `https://api.notion.com/v1/databases/${candidateId}/query`;
 
-    const databaseAttempt = await queryNotion(databaseUrl, version);
-    if (databaseAttempt.ok) {
-      payload = databaseAttempt.payload;
-      break;
-    }
-
-    lastError = {
-      status: databaseAttempt.status,
-      details: databaseAttempt.details,
-      url: databaseUrl,
-      version,
-    };
-
-    if (shouldTryDataSourceFallback(databaseAttempt.status, databaseAttempt.details)) {
-      console.log("Tentando Notion API (data-source fallback):", {
-        url: dataSourceUrl,
-        databaseIdLength: NOTION_DATABASE_ID.length,
+      console.log("Tentando Notion API (database):", {
+        url: databaseUrl,
+        databaseIdLength: candidateId.length,
         version,
       });
 
-      const dataSourceAttempt = await queryNotion(dataSourceUrl, version);
-      if (dataSourceAttempt.ok) {
-        payload = dataSourceAttempt.payload;
+      const databaseAttempt = await queryNotion(databaseUrl, version);
+      if (databaseAttempt.ok) {
+        payload = databaseAttempt.payload;
         break;
       }
 
       lastError = {
-        status: dataSourceAttempt.status,
-        details: dataSourceAttempt.details,
-        url: dataSourceUrl,
+        status: databaseAttempt.status,
+        details: databaseAttempt.details,
+        url: databaseUrl,
         version,
       };
+
+      if (!isObjectNotFound(databaseAttempt.status, databaseAttempt.details)) {
+        break;
+      }
     }
+
+    if (payload) break;
   }
 
   if (!payload) {
+    const databases = await searchAccessibleDatabases();
+    const accessibleHint = databases.length
+      ? ` Databases acessiveis para este token: ${databases
+          .map((d) => `${d.title} (${d.id})`)
+          .join(" | ")}.`
+      : " Nenhuma database acessivel foi encontrada via /v1/search para este token.";
+
     console.error("Erro Notion API:", lastError);
     throw new Error(
-      `Erro Notion ${lastError.status} (${lastError.version}) em ${lastError.url}: ${lastError.details}`,
+      `Erro Notion ${lastError.status} (${lastError.version}) em ${lastError.url}: ${lastError.details}.${accessibleHint}`,
     );
   }
 
@@ -280,7 +304,9 @@ app.get("/api/debug", async (_, res) => {
     apiKeyLength: NOTION_API_KEY ? NOTION_API_KEY.length : 0,
     hasDatabaseId,
     databaseIdLength: NOTION_DATABASE_ID ? NOTION_DATABASE_ID.length : 0,
+    databaseIdRaw: NOTION_DATABASE_ID_RAW,
     databaseIdNormalized: NOTION_DATABASE_ID,
+    databaseIdCandidates: NOTION_DATABASE_ID_CANDIDATES,
     notionVersion: NOTION_VERSION,
     whatsappConfigured: !!WHATSAPP_LOJA,
     whatsappNumber: WHATSAPP_LOJA,
