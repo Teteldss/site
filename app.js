@@ -181,6 +181,14 @@ app.get("/api/debug", async (_, res) => {
   const hasApiKey = !!NOTION_API_KEY && NOTION_API_KEY !== "";
   const hasDatabaseId = !!NOTION_DATABASE_ID && NOTION_DATABASE_ID !== "";
   
+  // Log para diagnosticar o problema
+  console.log("DEBUG - Environment variables:", {
+    WHATSAPP_LOJA: WHATSAPP_LOJA,
+    WHATSAPP_LOJA_LENGTH: WHATSAPP_LOJA.length,
+    NOTION_API_KEY_LENGTH: NOTION_API_KEY.length,
+    NOTION_DATABASE_ID_LENGTH: NOTION_DATABASE_ID.length,
+  });
+  
   res.status(200).json({
     hasApiKey,
     apiKeyLength: NOTION_API_KEY ? NOTION_API_KEY.length : 0,
@@ -188,6 +196,8 @@ app.get("/api/debug", async (_, res) => {
     databaseIdLength: NOTION_DATABASE_ID ? NOTION_DATABASE_ID.length : 0,
     notionVersion: NOTION_VERSION,
     whatsappConfigured: !!WHATSAPP_LOJA,
+    whatsappNumber: WHATSAPP_LOJA,
+    whatsappLength: WHATSAPP_LOJA.length,
   });
 });
 
