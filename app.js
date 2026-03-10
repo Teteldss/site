@@ -8,7 +8,7 @@ const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
 const NOTION_API_KEY = process.env.NOTION_API_KEY || "";
-const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || "";
+const NOTION_DATABASE_ID = (process.env.NOTION_DATABASE_ID || "").trim();
 const NOTION_VERSION = process.env.NOTION_VERSION || "2025-09-03";
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
@@ -98,10 +98,18 @@ async function fetchNotionProducts() {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), NOTION_TIMEOUT_MS);
 
+  const url = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
+  
+  console.log("Chamando Notion API:", {
+    url,
+    databaseIdLength: NOTION_DATABASE_ID.length,
+    version: NOTION_VERSION,
+  });
+
   let response;
 
   try {
-    response = await fetch(`https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`, {
+    response = await fetch(url, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${NOTION_API_KEY}`,
@@ -162,6 +170,7 @@ app.get("/api/products", async (_, res) => {
     res.status(500).json({
       configured: true,
       products: [],
+      whatsapp: WHATSAPP_LOJA,
       error: "Falha ao consultar o Notion.",
       details: String(error.message || error),
     });
