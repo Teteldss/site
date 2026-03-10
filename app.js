@@ -287,6 +287,60 @@ app.get("/api/products", async (_, res) => {
   }
 });
 
+app.get("/api/test-notion", async (_, res) => {
+  const urlUsersMe = "https://api.notion.com/v1/users/me";
+  const urlSearch = "https://api.notion.com/v1/search";
+  const urlQuery = `https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query`;
+
+  async function rawGet(url) {
+    try {
+      const r = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${NOTION_API_KEY}`,
+          "Notion-Version": NOTION_VERSION,
+        },
+      });
+      const body = await r.text();
+      return { status: r.status, body };
+    } catch (e) {
+      return { status: 0, body: String(e.message) };
+    }
+  }
+
+  async function rawPost(url, payload) {
+    try {
+      const r = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${NOTION_API_KEY}`,
+          "Notion-Version": NOTION_VERSION,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      const body = await r.text();
+      return { status: r.status, body };
+    } catch (e) {
+      return { status: 0, body: String(e.message) };
+    }
+  }
+
+  const [usersMe, search, query] = await Promise.all([
+    rawGet(urlUsersMe),
+    rawPost(urlSearch, { filter: { property: "object", value: "database" }, page_size: 5 }),
+    rawPost(urlQuery, { page_size: 1 }),
+  ]);
+
+  res.status(200).json({
+    notionVersion: NOTION_VERSION,
+    databaseId: NOTION_DATABASE_ID,
+    usersMe: { url: urlUsersMe, ...usersMe },
+    search: { url: urlSearch, ...search },
+    query: { url: urlQuery, ...query },
+  });
+});
+
 app.get("/api/debug", async (_, res) => {
   const hasApiKey = !!NOTION_API_KEY && NOTION_API_KEY !== "";
   const hasDatabaseId = !!NOTION_DATABASE_ID && NOTION_DATABASE_ID !== "";
