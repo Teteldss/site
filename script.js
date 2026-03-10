@@ -120,13 +120,23 @@ function renderGallery() {
     node.querySelector(".price").textContent = brl.format(product.price);
 
     if (product.image && /^https?:\/\//i.test(product.image)) {
-      image.style.background = "#efefef";
-      image.style.backgroundImage = `url(${product.image})`;
-      image.style.backgroundSize = "cover";
-      image.style.backgroundPosition = "center";
+      const img = document.createElement("img");
+      img.alt = product.name;
+      img.decoding = "async";
+      if (index < 4) img.fetchPriority = "high";
+      img.addEventListener("load", () => {
+        img.classList.add("img-ready");
+        image.classList.add("img-loaded");
+      });
+      img.addEventListener("error", () => {
+        image.classList.add("img-loaded");
+        image.style.background = "linear-gradient(145deg, #ebeae8, #d9d8d4)";
+      });
+      img.src = product.image;
+      image.appendChild(img);
     } else {
+      image.classList.add("img-loaded");
       image.style.background = product.image || "linear-gradient(145deg, #ebeae8, #d9d8d4)";
-      image.style.backgroundImage = "none";
     }
 
     selectBtn.addEventListener("click", () => {
