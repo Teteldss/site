@@ -9,8 +9,17 @@
   --accent-strong: #166b3a;
   --radius: 16px;
   --radius-sm: 12px;
-  --shadow-card: 0 14px 30px rgba(20, 20, 20, 0.08);
-  --shadow-soft: 0 6px 20px rgba(20, 20, 20, 0.05);
+  --shadow-card: 
+    0 2px 4px rgba(20, 20, 20, 0.04),
+    0 8px 20px rgba(20, 20, 20, 0.08),
+    0 20px 40px rgba(20, 20, 20, 0.05);
+  --shadow-soft:
+    0 1px 2px rgba(20, 20, 20, 0.03),
+    0 4px 12px rgba(20, 20, 20, 0.06);
+  --shadow-checkout:
+    0 2px 4px rgba(20, 20, 20, 0.04),
+    0 10px 30px rgba(20, 20, 20, 0.09),
+    0 30px 60px rgba(20, 20, 20, 0.04);
 }
 
 * {
@@ -93,14 +102,15 @@ main {
   border-radius: var(--radius);
   overflow: hidden;
   background: linear-gradient(180deg, #ffffff 0%, var(--surface-soft) 100%);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
   animation: cardIn 0.4s ease both;
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: #d8d9d2;
 }
 
 .card.is-selected {
@@ -181,6 +191,7 @@ main {
 
 .price {
   font-weight: 700;
+  color: var(--accent-strong);
 }
 
 .checkout {
@@ -191,7 +202,7 @@ main {
   border-radius: 20px;
   background: #fff;
   padding: 18px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-checkout);
   max-height: calc(100vh - 50px);
   overflow-y: auto;
 }
