@@ -38,6 +38,7 @@ const NOTION_VERSION = (process.env.NOTION_VERSION || "2025-09-03").trim();
 const NOTION_TIMEOUT_MS = Number(process.env.NOTION_TIMEOUT_MS || 10000);
 const PRODUCTS_CACHE_TTL_MS = Number(process.env.PRODUCTS_CACHE_TTL_MS || 60000);
 const WHATSAPP_LOJA = String(process.env.WHATSAPP_LOJA || "55119997635107").replace(/\D/g, "");
+const ENABLE_NOTION_DIAGNOSTICS = process.env.ENABLE_NOTION_DIAGNOSTICS === "true";
 
 let productsCache = {
   expiresAt: 0,
@@ -58,6 +59,10 @@ function getQueryEndpointCandidates() {
   }
 
   return ["databases"];
+}
+
+function getSearchObjectFilterValue() {
+  return NOTION_VERSION >= "2025-09-03" ? "data_source" : "database";
 }
 
 function parseTitle(prop) {
@@ -114,11 +119,6 @@ function mapNotionProduct(page) {
   };
 }
 
-function isObjectNotFound(status, details) {
-  const text = String(details || "");
-  return status === 404 && /object_not_found/i.test(text);
-}
-
 async function queryNotion(url, notionVersion, bodyPayload = { page_size: 100 }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), NOTION_TIMEOUT_MS);
@@ -163,7 +163,7 @@ async function queryNotion(url, notionVersion, bodyPayload = { page_size: 100 })
 async function searchAccessibleDatabases() {
   const url = "https://api.notion.com/v1/search";
   const response = await queryNotion(url, NOTION_VERSION, {
-    filter: { property: "object", value: "database" },
+    filter: { property: "object", value: getSearchObjectFilterValue() },
     page_size: 20,
   });
 
@@ -211,13 +211,6 @@ async function fetchNotionProducts() {
   for (const endpointBase of endpointCandidates) {
     for (const candidateId of candidateIds) {
       const queryUrl = `https://api.notion.com/v1/${endpointBase}/${candidateId}/query`;
-
-      console.log("Tentando Notion API:", {
-        url: queryUrl,
-        endpointBase,
-        databaseIdLength: candidateId.length,
-        version: NOTION_VERSION,
-      });
 
       const attempt = await queryNotion(queryUrl, NOTION_VERSION);
       if (attempt.ok) {
@@ -294,6 +287,13 @@ app.get("/api/products", async (_, res) => {
 });
 
 app.get("/api/test-notion", async (_, res) => {
+  if (!ENABLE_NOTION_DIAGNOSTICS) {
+    return res.status(404).json({
+      error: "Endpoint de diagnostico desabilitado.",
+      hint: "Defina ENABLE_NOTION_DIAGNOSTICS=true para habilitar.",
+    });
+  }
+
   const urlUsersMe = "https://api.notion.com/v1/users/me";
   const urlSearch = "https://api.notion.com/v1/search";
   const endpointCandidates = getQueryEndpointCandidates();
@@ -334,7 +334,7 @@ app.get("/api/test-notion", async (_, res) => {
 
   const [usersMe, search] = await Promise.all([
     rawGet(urlUsersMe),
-    rawPost(urlSearch, { filter: { property: "object", value: "data_source" }, page_size: 5 }),
+    rawPost(urlSearch, { filter: { property: "object", value: getSearchObjectFilterValue() }, page_size: 5 }),
   ]);
 
   const queryAttempts = [];

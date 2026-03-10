@@ -52,6 +52,7 @@ Use hospedagem com suporte a Node.js (normalmente VPS ou plano com Node habilita
 	- `NOTION_VERSION`
 	- `NOTION_TIMEOUT_MS`
 	- `PRODUCTS_CACHE_TTL_MS`
+	- `ENABLE_NOTION_DIAGNOSTICS` (opcional, `true` para habilitar `/api/test-notion`)
 	- `WHATSAPP_LOJA`
 	- `PORT`
 4. Inicie com `npm start` (ou via PM2).
