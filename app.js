@@ -370,26 +370,19 @@ app.get("/api/test-notion", async (_, res) => {
 app.get("/api/debug", async (_, res) => {
   const hasApiKey = !!NOTION_API_KEY && NOTION_API_KEY !== "";
   const hasDatabaseId = !!NOTION_DATABASE_ID && NOTION_DATABASE_ID !== "";
-  
-  // Log para diagnosticar o problema
-  console.log("DEBUG - Environment variables:", {
-    WHATSAPP_LOJA: WHATSAPP_LOJA,
-    WHATSAPP_LOJA_LENGTH: WHATSAPP_LOJA.length,
-    NOTION_API_KEY_LENGTH: NOTION_API_KEY.length,
-    NOTION_DATABASE_ID_LENGTH: NOTION_DATABASE_ID.length,
-  });
-  
+
+  const maskEnd = (str, keep = 4) =>
+    str.length <= keep ? "*".repeat(str.length) : "*".repeat(str.length - keep) + str.slice(-keep);
+
   res.status(200).json({
     hasApiKey,
     apiKeyLength: NOTION_API_KEY ? NOTION_API_KEY.length : 0,
     hasDatabaseId,
     databaseIdLength: NOTION_DATABASE_ID ? NOTION_DATABASE_ID.length : 0,
-    databaseIdRaw: NOTION_DATABASE_ID_RAW,
-    databaseIdNormalized: NOTION_DATABASE_ID,
-    databaseIdCandidates: NOTION_DATABASE_ID_CANDIDATES,
+    databaseIdNormalized: hasDatabaseId ? maskEnd(NOTION_DATABASE_ID.replace(/-/g, ""), 6) : "",
     notionVersion: NOTION_VERSION,
     whatsappConfigured: !!WHATSAPP_LOJA,
-    whatsappNumber: WHATSAPP_LOJA,
+    whatsappMasked: WHATSAPP_LOJA ? maskEnd(WHATSAPP_LOJA, 4) : "",
     whatsappLength: WHATSAPP_LOJA.length,
   });
 });
