@@ -255,9 +255,6 @@ function App() {
   const [loading, setLoading] = React.useState(true);
   const [statusText, setStatusText] = React.useState("Carregando catalogo...");
   const [toast, setToast] = React.useState("");
-  const [sortBy, setSortBy] = React.useState("featured");
-  const [minPrice, setMinPrice] = React.useState("");
-  const [maxPrice, setMaxPrice] = React.useState("");
   const [cart, setCart] = React.useState({});
   const [customerName, setCustomerName] = React.useState("");
   const [notes, setNotes] = React.useState("");
@@ -323,24 +320,6 @@ function App() {
     () => selectedItems.reduce((sum, item) => sum + item.product.price * item.qty, 0),
     [selectedItems],
   );
-
-  const filteredProducts = React.useMemo(() => {
-    const min = minPrice === "" ? Number.NEGATIVE_INFINITY : Number(minPrice);
-    const max = maxPrice === "" ? Number.POSITIVE_INFINITY : Number(maxPrice);
-
-    if (Number.isNaN(min) || Number.isNaN(max)) {
-      return [];
-    }
-
-    const base = products.filter((p) => Number(p.price || 0) >= min && Number(p.price || 0) <= max);
-
-    return [...base].sort((a, b) => {
-      if (sortBy === "price-asc") return a.price - b.price;
-      if (sortBy === "price-desc") return b.price - a.price;
-      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
-      return String(a.name || "").localeCompare(String(b.name || ""), "pt-BR");
-    });
-  }, [products, sortBy, minPrice, maxPrice]);
 
   const openProduct = async (product) => {
     let fullProduct = product;
@@ -490,60 +469,6 @@ function App() {
         e("h2", null, "Nossos produtos"),
         e("p", null, "Entre nos detalhes para ver galeria completa e avaliacoes."),
       ),
-      e(
-        "section",
-        { className: "store-menu card" },
-        e(
-          "div",
-          { className: "store-menu__item" },
-          e("label", { htmlFor: "sort-products" }, "Ordenar"),
-          e(
-            "select",
-            {
-              id: "sort-products",
-              value: sortBy,
-              onChange: (ev) => setSortBy(ev.target.value),
-            },
-            e("option", { value: "featured" }, "Nome A-Z"),
-            e("option", { value: "price-asc" }, "Preco: menor primeiro"),
-            e("option", { value: "price-desc" }, "Preco: maior primeiro"),
-            e("option", { value: "rating" }, "Melhor avaliacao"),
-          ),
-        ),
-        e(
-          "div",
-          { className: "store-menu__item store-menu__range" },
-          e("label", null, "Faixa de preco"),
-          e(
-            "div",
-            { className: "range-grid" },
-            e("input", {
-              type: "number",
-              min: "0",
-              step: "1",
-              placeholder: "Min",
-              value: minPrice,
-              onChange: (ev) => setMinPrice(ev.target.value),
-              "aria-label": "Preco minimo",
-            }),
-            e("input", {
-              type: "number",
-              min: "0",
-              step: "1",
-              placeholder: "Max",
-              value: maxPrice,
-              onChange: (ev) => setMaxPrice(ev.target.value),
-              "aria-label": "Preco maximo",
-            }),
-          ),
-        ),
-        e(
-          "div",
-          { className: "store-menu__stats" },
-          e("strong", null, `${filteredProducts.length}`),
-          e("span", null, filteredProducts.length === 1 ? "produto visivel" : "produtos visiveis"),
-        ),
-      ),
       e("p", { id: "data-status", className: "data-status", role: "status", "aria-live": "polite" }, statusText),
       e(
         "section",
@@ -562,7 +487,7 @@ function App() {
                 ),
               ),
             )
-          : filteredProducts.map((product, index) =>
+          : products.map((product, index) =>
               e(ProductCard, {
                 key: product.id,
                 product,
