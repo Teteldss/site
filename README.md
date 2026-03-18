@@ -1,10 +1,14 @@
-# Loja Galeria Minimalista + Notion
+# Loja Galeria + Notion + SQLite
 
+<<<<<<< HEAD
 Esse repositório e tudo escrito abaixo neste README, foram criados com a inteligencia artificial github copilot em um codespaces, o objetivo dessa iniciativa foi testar os limites da AI e sua autonomia, foram aproximadamente 7 ao longo de 3 dias para chegar nesse resultado, como não sou fullstack não sei em quanto tempo um proficional abilitado chegaria no mesmo resultado. No entando eu tive uma comclusão interesante, uma AI não consegue criar um projeto estruturado sem supervisão, ela ainda comete diversos erros, é incrivel que mesmo apontando o erro para o modelo e dando instruções em um prompt de como resolver os resultados da resolução não são muito satisfatorios. Eu disse anteriormente que demorei aproximadante 7 horas para ter o resultado que vos apresento, insisto em diser que o objetivo era somente ela fazer modificações no codigo e mminhas unicas comtrbuições seriam os prompts e hospedar o site na hostinger. Praticamente metade das 7 horas foram-me escamotedas tentando resolver um problema de integração com a API do notion, por fim o problema foi um erro no codigo que eu tinha informado logo no inicio do projeto e instruido via prompt que esse erro deveria ser sanado, foi uma surpresa para mim descobir após horas que era esse mesmo erro não corrigido que estava fazendo com que o site não conseguise interagir com o notion. Fiz questão de não usar nenhuma ferramenta de correção ortografica ou inteligencia artificial para criar esse paragrafo, então me perdoem pelos erros de português.
 
 Site de loja com visual simples (estilo galeria), selecao multipla de itens e finalizacao via WhatsApp com mensagem personalizada.
+=======
+Site de loja com visual estilo vitrine, selecao multipla de itens e finalizacao via WhatsApp com mensagem personalizada.
+>>>>>>> dba9d33 (4.0])
 
-Agora os produtos podem vir de um banco no Notion, usando API no backend para manter a chave segura.
+Agora os produtos sao sincronizados do Notion para SQLite local, melhorando desempenho e permitindo recursos de produto detalhado e avaliacoes com moderacao.
 
 ## Rodando o projeto
 
@@ -23,6 +27,8 @@ Variaveis no `.env`:
 - `NOTION_API_KEY`: token de integracao interna do Notion.
 - `NOTION_DATABASE_ID`: id do database de produtos.
 - `NOTION_VERSION`: versao da API (padrao `2025-09-03`).
+- `PRODUCTS_SYNC_INTERVAL_MS`: intervalo de sincronizacao Notion -> SQLite (padrao `300000`).
+- `ADMIN_REVIEW_KEY`: chave para endpoints de moderacao de avaliacao.
 - `WHATSAPP_LOJA`: numero WhatsApp da loja com DDI e DDD (ex: 5511999999999).
 - `PORT`: porta local (padrao `3000`).
 
@@ -35,6 +41,23 @@ No banco do Notion, use propriedades com estes nomes (ou variacoes ja mapeadas):
 - `Active` (checkbox)
 
 Se Notion nao estiver configurado, o site usa produtos locais de fallback automaticamente.
+
+## Novos recursos
+
+- Home estilo loja com cards enxutos (nome + preco + botao "Ver detalhes")
+- Modal de produto com descricao completa
+- Galeria com multiplas fotos do produto
+- Envio de avaliacao do cliente (fica pendente)
+- Moderacao de avaliacao por admin
+
+## Endpoints principais
+
+- `GET /api/products`: lista de produtos vinda do SQLite
+- `GET /api/products/:slug`: detalhe do produto + fotos + avaliacoes aprovadas
+- `POST /api/reviews`: cria avaliacao pendente
+- `GET /api/admin/reviews?status=pending` (header `x-admin-key`)
+- `PATCH /api/admin/reviews/:id` com body `{ "status": "approved" | "rejected" }` (header `x-admin-key`)
+- `POST /api/admin/sync` para forcar sincronizacao com Notion (header `x-admin-key`)
 
 ## Personalizacao rapida
 

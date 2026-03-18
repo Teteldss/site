@@ -16,7 +16,7 @@
       href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=2.3" />
+    <link rel="stylesheet" href="styles.css?v=3.0" />
   </head>
   <body>
     <header class="topbar">
@@ -66,12 +66,61 @@
         <div class="image-wrap"></div>
         <div class="card-body">
           <h3></h3>
-          <p class="description"></p>
+          <button class="view-btn" type="button">Ver detalhes</button>
           <span class="price"></span>
         </div>
       </article>
     </template>
 
-    <script src="script.js?v=2.3"></script>
+    <div class="product-modal" id="product-modal" aria-hidden="true" role="dialog" aria-modal="true">
+      <div class="product-modal__backdrop" data-close-modal="true"></div>
+      <article class="product-modal__content">
+        <button class="product-modal__close" id="product-modal-close" type="button" aria-label="Fechar detalhes">x</button>
+
+        <div class="product-modal__grid">
+          <section class="product-gallery">
+            <div class="product-gallery__main" id="product-main-image"></div>
+            <div class="product-gallery__thumbs" id="product-thumbs"></div>
+          </section>
+
+          <section class="product-info">
+            <h3 id="product-title"></h3>
+            <p class="product-price" id="product-price"></p>
+            <p class="product-rating" id="product-rating"></p>
+            <p class="product-description" id="product-description"></p>
+
+            <div class="product-actions">
+              <button id="product-add" class="whatsapp-btn" type="button">Adicionar ao pedido</button>
+            </div>
+
+            <div class="product-reviews">
+              <h4>Avaliacoes</h4>
+              <ul id="product-reviews-list" class="reviews-list"></ul>
+
+              <form id="review-form" class="review-form">
+                <label for="review-name">Seu nome</label>
+                <input id="review-name" type="text" maxlength="80" required />
+
+                <label for="review-rating">Nota (1 a 5)</label>
+                <select id="review-rating" required>
+                  <option value="5">5</option>
+                  <option value="4">4</option>
+                  <option value="3">3</option>
+                  <option value="2">2</option>
+                  <option value="1">1</option>
+                </select>
+
+                <label for="review-comment">Comentario</label>
+                <textarea id="review-comment" rows="3" maxlength="400" required></textarea>
+
+                <button class="review-submit" type="submit">Enviar avaliacao</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </article>
+    </div>
+
+    <script src="script.js?v=3.0"></script>
   </body>
 </html>
