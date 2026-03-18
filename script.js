@@ -199,7 +199,7 @@ function ProductModal({
                       e("p", null, review.comment || ""),
                     );
                   })
-                : e("li", { className: "review-empty" }, "Ainda não há avaliações aprovadas."),
+                : e("li", { className: "review-empty" }, "Este produto ainda não recebeu avaliações publicadas."),
             ),
             e(
               "form",
