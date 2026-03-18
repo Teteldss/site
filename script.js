@@ -717,6 +717,17 @@ function App() {
   const [reviewForm, setReviewForm] = React.useState({ name: "", rating: "5", comment: "" });
   const [sendingOrder, setSendingOrder] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 560);
+  const [currentRoute, setCurrentRoute] = React.useState(window.location.hash.slice(1) || "/");
+
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      const newRoute = window.location.hash.slice(1) || "/";
+      setCurrentRoute(newRoute);
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   React.useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -741,6 +752,19 @@ function App() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  React.useEffect(() => {
+    if (currentRoute.startsWith("/produto/")) {
+      const slug = currentRoute.replace("/produto/", "");
+      const product = products.find((p) => p.slug === slug);
+      if (product) {
+        openProduct(product);
+      }
+    } else if (currentRoute === "/" || currentRoute === "") {
+      setModalProduct(null);
+      setModalVariant("");
+    }
+  }, [currentRoute, products]);
 
   React.useEffect(() => {
     let alive = true;
@@ -838,6 +862,7 @@ function App() {
     setModalProduct(fullProduct);
     setActiveImage((fullProduct.images || [])[0] || "");
     setModalVariant(Array.isArray(fullProduct.variants) && fullProduct.variants.length ? fullProduct.variants[0] : "");
+    window.location.hash = `#/produto/${fullProduct.slug}`;
   };
 
   const addToCart = (product, variantLabel = "") => {
@@ -1145,8 +1170,7 @@ function App() {
           activeImage,
           onImageSelect: setActiveImage,
           onClose: () => {
-            setModalProduct(null);
-            setModalVariant("");
+            window.location.hash = "#/";
           },
           onAdd: addToCart,
           cartQty: selectedQtyByProduct[modalProduct.id] || 0,
