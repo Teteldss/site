@@ -231,13 +231,33 @@ function parseCheckbox(prop) {
   return Boolean(prop.checkbox);
 }
 
+function notionFileToImage(item) {
+  if (!item) return null;
+
+  let url = "";
+  if (item.type === "file") url = item.file?.url || "";
+  if (item.type === "external") url = item.external?.url || "";
+  if (!url) return null;
+
+  return {
+    url,
+    name: String(item.name || "").toLowerCase(),
+  };
+}
+
+function choosePrimaryImage(files) {
+  if (!files.length) return "";
+
+  const preferred = files.find((file) => /(^|[_\-.\s])main([_\-.\s]|$)/i.test(file.name));
+  return (preferred || files[0]).url;
+}
+
 function parseImage(prop) {
   if (!prop) return "";
 
   if (prop.type === "files" && Array.isArray(prop.files) && prop.files.length > 0) {
-    const firstFile = prop.files[0];
-    if (firstFile.type === "file" && firstFile.file?.url) return firstFile.file.url;
-    if (firstFile.type === "external" && firstFile.external?.url) return firstFile.external.url;
+    const files = prop.files.map(notionFileToImage).filter(Boolean);
+    return choosePrimaryImage(files);
   }
 
   if (prop.type === "url" && typeof prop.url === "string") return prop.url;
@@ -250,11 +270,9 @@ function parseImages(prop) {
 
   if (prop.type === "files" && Array.isArray(prop.files)) {
     return prop.files
-      .map((item) => {
-        if (item.type === "file") return item.file?.url || "";
-        if (item.type === "external") return item.external?.url || "";
-        return "";
-      })
+      .map(notionFileToImage)
+      .filter(Boolean)
+      .map((file) => file.url)
       .filter(Boolean);
   }
 

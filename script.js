@@ -78,7 +78,7 @@ function ProductCard({ product, selectedQty, onOpen, index }) {
         className: "image-wrap img-loaded",
         style: hasRemoteImage ? undefined : { background: product.image || "linear-gradient(145deg, #f5aabf, #e88aa5)" },
       },
-      hasRemoteImage ? e("img", { src: product.image, alt: product.name, loading: "lazy" }) : null,
+      hasRemoteImage ? e("img", { className: "img-ready", src: product.image, alt: product.name, loading: "lazy" }) : null,
     ),
     e(
       "div",
@@ -132,7 +132,7 @@ function ProductModal({
               className: "product-gallery__main",
               style: hasMainRemote ? undefined : { background: mainImage },
             },
-            hasMainRemote ? e("img", { src: mainImage, alt: product.name, loading: "lazy" }) : null,
+            hasMainRemote ? e("img", { className: "img-ready", src: mainImage, alt: product.name, loading: "lazy" }) : null,
           ),
           e(
             "div",
@@ -149,7 +149,7 @@ function ProductModal({
                   onClick: () => onImageSelect(src),
                   style: isRemote ? undefined : { background: src },
                 },
-                isRemote ? e("img", { src, alt: "Miniatura", loading: "lazy" }) : null,
+                isRemote ? e("img", { className: "img-ready", src, alt: "Miniatura", loading: "lazy" }) : null,
               );
             }),
           ),
