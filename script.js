@@ -58,7 +58,6 @@ function ProductCard({ product, selectedQty, onOpen, index }) {
     "article",
     {
       className: `card card-clickable${selectedQty > 0 ? " is-selected" : ""}`,
-      style: { "--card-delay": `${index * 45}ms` },
       tabIndex: 0,
       role: "button",
       onClick: () => onOpen(product),
@@ -86,7 +85,6 @@ function ProductCard({ product, selectedQty, onOpen, index }) {
       { className: "card-body" },
       e("h3", null, product.name),
       imagesCount > 1 ? e("span", { className: "media-count" }, `${imagesCount} fotos`) : null,
-      e("span", { className: "card-hint" }, "Clique no card para abrir o produto"),
       e("span", { className: "price" }, brl.format(product.price)),
     ),
   );
@@ -98,6 +96,7 @@ function ProductModal({
   onImageSelect,
   onClose,
   onAdd,
+  cartQty,
   reviewForm,
   onReviewForm,
   onReviewSubmit,
@@ -173,8 +172,12 @@ function ProductModal({
             { className: "product-actions" },
             e(
               "button",
-              { className: "whatsapp-btn", type: "button", onClick: () => onAdd(product) },
-              "Adicionar ao pedido",
+              {
+                className: `whatsapp-btn${cartQty > 0 ? " is-in-cart" : ""}`,
+                type: "button",
+                onClick: () => onAdd(product),
+              },
+              cartQty > 0 ? `No carrinho (${cartQty}) · adicionar mais` : "Adicionar ao carrinho",
             ),
           ),
           e(
@@ -252,7 +255,6 @@ function App() {
   const [loading, setLoading] = React.useState(true);
   const [statusText, setStatusText] = React.useState("Carregando catalogo...");
   const [toast, setToast] = React.useState("");
-  const [search, setSearch] = React.useState("");
   const [sortBy, setSortBy] = React.useState("featured");
   const [minPrice, setMinPrice] = React.useState("");
   const [maxPrice, setMaxPrice] = React.useState("");
@@ -323,7 +325,6 @@ function App() {
   );
 
   const filteredProducts = React.useMemo(() => {
-    const term = search.trim().toLowerCase();
     const min = minPrice === "" ? Number.NEGATIVE_INFINITY : Number(minPrice);
     const max = maxPrice === "" ? Number.POSITIVE_INFINITY : Number(maxPrice);
 
@@ -331,13 +332,7 @@ function App() {
       return [];
     }
 
-    const base = products.filter((p) => {
-      if (!term) return true;
-      return (
-        String(p.name || "").toLowerCase().includes(term) ||
-        String(p.description || "").toLowerCase().includes(term)
-      );
-    }).filter((p) => Number(p.price || 0) >= min && Number(p.price || 0) <= max);
+    const base = products.filter((p) => Number(p.price || 0) >= min && Number(p.price || 0) <= max);
 
     return [...base].sort((a, b) => {
       if (sortBy === "price-asc") return a.price - b.price;
@@ -345,7 +340,7 @@ function App() {
       if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
       return String(a.name || "").localeCompare(String(b.name || ""), "pt-BR");
     });
-  }, [products, search, sortBy, minPrice, maxPrice]);
+  }, [products, sortBy, minPrice, maxPrice]);
 
   const openProduct = async (product) => {
     let fullProduct = product;
@@ -501,18 +496,6 @@ function App() {
         e(
           "div",
           { className: "store-menu__item" },
-          e("label", { htmlFor: "search-products" }, "Buscar"),
-          e("input", {
-            id: "search-products",
-            type: "search",
-            placeholder: "Nome ou descricao",
-            value: search,
-            onChange: (ev) => setSearch(ev.target.value),
-          }),
-        ),
-        e(
-          "div",
-          { className: "store-menu__item" },
           e("label", { htmlFor: "sort-products" }, "Ordenar"),
           e(
             "select",
@@ -662,6 +645,7 @@ function App() {
           onImageSelect: setActiveImage,
           onClose: () => setModalProduct(null),
           onAdd: addToCart,
+          cartQty: cart[modalProduct.id]?.qty || 0,
           reviewForm,
           onReviewForm,
           onReviewSubmit: submitReview,

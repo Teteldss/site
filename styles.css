@@ -54,7 +54,6 @@ body {
   justify-content: space-between;
   align-items: flex-start;
   gap: 14px;
-  animation: riseIn 0.5s ease both;
 }
 
 .brand-block {
@@ -108,8 +107,6 @@ main {
 
 .section-head {
   margin: 0 0 14px;
-  animation: riseIn 0.56s ease both;
-  animation-delay: 0.06s;
 }
 
 .section-head h2 {
@@ -127,12 +124,10 @@ main {
 
 .store-menu {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto;
   gap: 10px;
   margin-bottom: 14px;
-  background: linear-gradient(170deg, rgba(255, 230, 239, 0.95), rgba(255, 210, 225, 0.85));
-  animation: riseIn 0.6s ease both;
-  animation-delay: 0.12s;
+  background: rgba(255, 236, 244, 0.95);
 }
 
 .store-menu__item {
@@ -164,12 +159,12 @@ main {
 
 .store-menu__stats {
   min-width: 120px;
-  border: 1px dashed rgba(122, 18, 55, 0.25);
+  border: 1px solid rgba(122, 18, 55, 0.18);
   border-radius: 10px;
   display: grid;
   place-content: center;
   text-align: center;
-  background: rgba(255, 255, 255, 0.6);
+  background: #fff;
   padding: 8px;
 }
 
@@ -204,8 +199,7 @@ main {
   background: linear-gradient(180deg, var(--surface) 0%, var(--surface-soft) 100%);
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 220, 220, 0.6);
   transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-  animation: cardIn 0.45s ease both;
-  animation-delay: var(--card-delay, 0ms);
+  animation: cardIn 0.22s ease both;
 }
 
 .card-clickable {
@@ -301,11 +295,6 @@ main {
   margin: 0;
   font-size: 1.02rem;
   font-weight: 650;
-}
-
-.card-hint {
-  font-size: 0.77rem;
-  color: var(--muted);
 }
 
 .media-count {
@@ -466,10 +455,6 @@ main {
     grid-template-columns: 1fr;
   }
 
-  .store-menu__range .range-grid {
-    grid-template-columns: 1fr;
-  }
-
   .checkout {
     position: static;
     max-height: none;
@@ -587,11 +572,6 @@ main {
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Toast notification */
@@ -761,6 +741,10 @@ main {
 
 .product-actions {
   margin-bottom: 12px;
+}
+
+.product-actions .whatsapp-btn.is-in-cart {
+  background: linear-gradient(135deg, #7a1237, #a41c4d);
 }
 
 .product-reviews h4 {
