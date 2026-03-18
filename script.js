@@ -50,9 +50,34 @@ function normalizeProduct(raw) {
   };
 }
 
+function FadeImage({ src, alt, loading = "lazy", className = "", onLoadStateChange }) {
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    setLoaded(false);
+  }, [src]);
+
+  React.useEffect(() => {
+    if (typeof onLoadStateChange === "function") {
+      onLoadStateChange(loaded);
+    }
+  }, [loaded, onLoadStateChange]);
+
+  return e("img", {
+    src,
+    alt,
+    loading,
+    decoding: "async",
+    className: `${className}${loaded ? " img-ready" : ""}`.trim(),
+    onLoad: () => setLoaded(true),
+    onError: () => setLoaded(true),
+  });
+}
+
 function ProductCard({ product, selectedQty, onOpen, index }) {
   const hasRemoteImage = /^https?:\/\//i.test(product.image || "");
   const imagesCount = product.images?.length || 0;
+  const [imageLoaded, setImageLoaded] = React.useState(false);
 
   return e(
     "article",
@@ -75,10 +100,17 @@ function ProductCard({ product, selectedQty, onOpen, index }) {
     e(
       "div",
       {
-        className: "image-wrap img-loaded",
+        className: `image-wrap${imageLoaded ? " img-loaded" : ""}`,
         style: hasRemoteImage ? undefined : { background: product.image || "linear-gradient(145deg, #f5aabf, #e88aa5)" },
       },
-      hasRemoteImage ? e("img", { className: "img-ready", src: product.image, alt: product.name, loading: "lazy" }) : null,
+      hasRemoteImage
+        ? e(FadeImage, {
+            src: product.image,
+            alt: product.name,
+            loading: "lazy",
+            onLoadStateChange: setImageLoaded,
+          })
+        : null,
     ),
     e(
       "div",
@@ -107,6 +139,7 @@ function ProductModal({
   const images = product.images?.length ? product.images : ["linear-gradient(140deg, #f2b5ca, #e89ab6)"];
   const mainImage = activeImage || images[0];
   const hasMainRemote = /^https?:\/\//i.test(mainImage || "");
+  const [mainLoaded, setMainLoaded] = React.useState(false);
 
   return e(
     "div",
@@ -129,10 +162,17 @@ function ProductModal({
           e(
             "div",
             {
-              className: "product-gallery__main",
+              className: `product-gallery__main${hasMainRemote && mainLoaded ? " is-loaded" : ""}`,
               style: hasMainRemote ? undefined : { background: mainImage },
             },
-            hasMainRemote ? e("img", { className: "img-ready", src: mainImage, alt: product.name, loading: "lazy" }) : null,
+            hasMainRemote
+              ? e(FadeImage, {
+                  src: mainImage,
+                  alt: product.name,
+                  loading: "lazy",
+                  onLoadStateChange: setMainLoaded,
+                })
+              : null,
           ),
           e(
             "div",
@@ -149,7 +189,13 @@ function ProductModal({
                   onClick: () => onImageSelect(src),
                   style: isRemote ? undefined : { background: src },
                 },
-                isRemote ? e("img", { className: "img-ready", src, alt: "Miniatura", loading: "lazy" }) : null,
+                isRemote
+                  ? e(FadeImage, {
+                      src,
+                      alt: "Miniatura",
+                      loading: "lazy",
+                    })
+                  : null,
               );
             }),
           ),
@@ -448,17 +494,7 @@ function App() {
   return e(
     React.Fragment,
     null,
-    e(
-      "header",
-      { className: "topbar" },
-      e(
-        "div",
-        { className: "brand-block" },
-        e("h1", null, "Bibi Papelaria"),
-        e("p", null, "Escolha seus favoritos e monte seu pedido com praticidade."),
-      ),
-      e("a", { className: "admin-link", href: "/admin/", "aria-label": "Abrir painel administrativo" }, "Área admin"),
-    ),
+    e("header", { className: "topbar" }, e("h1", null, "Bibi Papelaria")),
 
     e(
       "main",
