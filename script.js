@@ -335,7 +335,7 @@ function App() {
         }
 
         setProducts(payload.products.map(normalizeProduct));
-        setStatusText("Nossos produtos");
+        setStatusText("");
       } catch (_) {
         if (!alive) return;
         setProducts(fallbackProducts.map(normalizeProduct));
@@ -505,7 +505,9 @@ function App() {
         e("h2", null, "Nossos produtos"),
         e("p", null, "Entre nos detalhes para ver galeria completa e avaliações."),
       ),
-      e("p", { id: "data-status", className: "data-status", role: "status", "aria-live": "polite" }, statusText),
+      statusText
+        ? e("p", { id: "data-status", className: "data-status", role: "status", "aria-live": "polite" }, statusText)
+        : null,
       e(
         "section",
         { className: "gallery", "aria-live": "polite" },

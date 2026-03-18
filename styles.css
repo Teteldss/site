@@ -48,6 +48,7 @@ body {
 .topbar {
   grid-column: 1 / -1;
   display: block;
+  margin-bottom: 6px;
 }
 
 .brand-block {
@@ -100,7 +101,7 @@ main {
 }
 
 .section-head {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 
 .section-head h2 {
@@ -111,20 +112,21 @@ main {
 }
 
 .section-head p {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: var(--muted);
   font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .gallery {
   align-self: start;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .data-status {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   color: var(--brown);
   font-weight: 500;
 }
@@ -402,23 +404,35 @@ main {
     padding: 10px;
   }
 
+  main {
+    display: grid;
+    gap: 10px;
+  }
+
   .gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
 
   .topbar h1 {
-    margin: 2px 0 0;
+    margin: 0;
     font-size: clamp(1.8rem, 8.5vw, 2.2rem);
+    line-height: 1.05;
   }
 
   .section-head {
-    margin: 0 0 10px;
+    margin: 0;
   }
 
   .section-head p {
-    margin-top: 4px;
+    margin-top: 6px;
     font-size: 0.88rem;
+    line-height: 1.4;
+  }
+
+  .data-status {
+    margin: 0;
+    font-size: 0.85rem;
   }
 
   .card-body {
@@ -435,6 +449,7 @@ main {
   }
 
   .checkout {
+    margin-top: 4px;
     border-radius: 14px;
     padding: 12px;
   }
@@ -456,6 +471,11 @@ main {
   .qty-btn {
     width: 28px;
     height: 28px;
+  }
+
+  .site-footer {
+    margin-top: 4px;
+    padding: 10px 0 4px;
   }
 
   .product-modal__content {
@@ -602,7 +622,7 @@ main {
   text-align: center;
   font-size: 0.8rem;
   color: #6d3f31;
-  padding: 16px 0 8px;
+  padding: 12px 0 6px;
   border-top: 1px solid rgba(120, 66, 51, 0.22);
 }
 
