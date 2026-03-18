@@ -1,12 +1,6 @@
 # Loja Galeria + Notion + SQLite
 
-<<<<<<< HEAD
-Esse repositório e tudo escrito abaixo neste README, foram criados com a inteligencia artificial github copilot em um codespaces, o objetivo dessa iniciativa foi testar os limites da AI e sua autonomia, foram aproximadamente 7 ao longo de 3 dias para chegar nesse resultado, como não sou fullstack não sei em quanto tempo um proficional abilitado chegaria no mesmo resultado. No entando eu tive uma comclusão interesante, uma AI não consegue criar um projeto estruturado sem supervisão, ela ainda comete diversos erros, é incrivel que mesmo apontando o erro para o modelo e dando instruções em um prompt de como resolver os resultados da resolução não são muito satisfatorios. Eu disse anteriormente que demorei aproximadante 7 horas para ter o resultado que vos apresento, insisto em diser que o objetivo era somente ela fazer modificações no codigo e mminhas unicas comtrbuições seriam os prompts e hospedar o site na hostinger. Praticamente metade das 7 horas foram-me escamotedas tentando resolver um problema de integração com a API do notion, por fim o problema foi um erro no codigo que eu tinha informado logo no inicio do projeto e instruido via prompt que esse erro deveria ser sanado, foi uma surpresa para mim descobir após horas que era esse mesmo erro não corrigido que estava fazendo com que o site não conseguise interagir com o notion. Fiz questão de não usar nenhuma ferramenta de correção ortografica ou inteligencia artificial para criar esse paragrafo, então me perdoem pelos erros de português.
-
-Site de loja com visual simples (estilo galeria), selecao multipla de itens e finalizacao via WhatsApp com mensagem personalizada.
-=======
 Site de loja com visual estilo vitrine, selecao multipla de itens e finalizacao via WhatsApp com mensagem personalizada.
->>>>>>> dba9d33 (4.0])
 
 Agora os produtos sao sincronizados do Notion para SQLite local, melhorando desempenho e permitindo recursos de produto detalhado e avaliacoes com moderacao.
 
@@ -49,6 +43,7 @@ Se Notion nao estiver configurado, o site usa produtos locais de fallback automa
 - Galeria com multiplas fotos do produto
 - Envio de avaliacao do cliente (fica pendente)
 - Moderacao de avaliacao por admin
+- Painel grafico de aprovacao em `/admin` com login por chave
 
 ## Endpoints principais
 
@@ -76,7 +71,8 @@ Use hospedagem com suporte a Node.js (normalmente VPS ou plano com Node habilita
 	- `NOTION_DATABASE_ID`
 	- `NOTION_VERSION`
 	- `NOTION_TIMEOUT_MS`
-	- `PRODUCTS_CACHE_TTL_MS`
+	- `PRODUCTS_SYNC_INTERVAL_MS`
+	- `ADMIN_REVIEW_KEY`
 	- `ENABLE_NOTION_DIAGNOSTICS` (opcional, `true` para habilitar `/api/test-notion`)
 	- `WHATSAPP_LOJA`
 	- `PORT`

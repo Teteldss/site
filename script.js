@@ -127,6 +127,13 @@ function renderGallery() {
     card.style.animationDelay = `${index * 55}ms`;
 
     node.querySelector("h3").textContent = product.name;
+    const imagesCount = Array.isArray(product.images) ? product.images.length : 0;
+    if (imagesCount > 1) {
+      const photosBadge = document.createElement("span");
+      photosBadge.className = "media-count";
+      photosBadge.textContent = `${imagesCount} fotos`;
+      node.querySelector(".card-body").insertBefore(photosBadge, viewBtn);
+    }
     node.querySelector(".price").textContent = brl.format(product.price);
 
     const previewImage = product.image || (product.images || [])[0];
@@ -299,8 +306,20 @@ function renderReviews(reviews) {
   reviews.forEach((review) => {
     const li = document.createElement("li");
     li.className = "review-item";
-    const stars = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
-    li.innerHTML = `<strong>${review.authorName || "Cliente"}</strong> <span>${stars}</span><p>${review.comment || ""}</p>`;
+
+    const safeRating = Math.max(1, Math.min(5, Number(review.rating) || 0));
+    const stars = "★".repeat(safeRating) + "☆".repeat(5 - safeRating);
+
+    const author = document.createElement("strong");
+    author.textContent = review.authorName || "Cliente";
+
+    const ratingSpan = document.createElement("span");
+    ratingSpan.textContent = ` ${stars}`;
+
+    const comment = document.createElement("p");
+    comment.textContent = review.comment || "";
+
+    li.append(author, ratingSpan, comment);
     productReviewsList.appendChild(li);
   });
 }

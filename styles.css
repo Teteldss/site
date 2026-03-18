@@ -50,6 +50,10 @@ body {
 
 .topbar {
   grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .brand-block {
@@ -82,8 +86,40 @@ body {
   line-height: 1.55;
 }
 
+.admin-link {
+  text-decoration: none;
+  border: 1px solid rgba(122, 18, 55, 0.35);
+  color: var(--accent-strong);
+  background: rgba(255, 243, 248, 0.72);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.admin-link:hover {
+  background: #fff;
+}
+
 main {
   min-width: 0;
+}
+
+.section-head {
+  margin: 0 0 14px;
+}
+
+.section-head h2 {
+  margin: 0;
+  color: var(--brown);
+  font-family: "Newsreader", Georgia, serif;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+}
+
+.section-head p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
 }
 
 .gallery {
@@ -186,6 +222,16 @@ main {
   margin: 0;
   font-size: 1.02rem;
   font-weight: 650;
+}
+
+.media-count {
+  width: fit-content;
+  border: 1px solid rgba(122, 18, 55, 0.18);
+  color: var(--brown);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .view-btn {
@@ -339,6 +385,10 @@ main {
 }
 
 @media (max-width: 560px) {
+  .topbar {
+    flex-direction: column;
+  }
+
   .gallery {
     grid-template-columns: 1fr;
   }
