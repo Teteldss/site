@@ -947,7 +947,32 @@ function App() {
   return e(
     React.Fragment,
     null,
-    e("header", { className: "topbar" }, e("h1", null, "Bibi Papelaria")),
+    e(
+      "header",
+      { className: "topbar" },
+      e(
+        "div",
+        { className: "topbar-layout" },
+        e(
+          "div",
+          { className: "brand-block" },
+          e("p", { className: "eyebrow" }, "Papelaria autoral"),
+          e("h1", null, "Bibi Papelaria"),
+          e(
+            "p",
+            null,
+            "Peças com acabamento delicado, visual elegante e carinho em cada detalhe para presentear ou usar no seu dia a dia.",
+          ),
+        ),
+        e(
+          "div",
+          { className: "topbar-highlights" },
+          e("span", { className: "highlight-pill" }, "Produção artesanal"),
+          e("span", { className: "highlight-pill" }, "Atendimento via WhatsApp"),
+          e("span", { className: "highlight-pill" }, "Personalização disponível"),
+        ),
+      ),
+    ),
 
     e(
       "main",
@@ -956,7 +981,7 @@ function App() {
         "section",
         { className: "section-head", "aria-label": "Catálogo de produtos" },
         e("h2", null, "Nossos produtos"),
-        e("p", null, "Entre nos detalhes para ver galeria completa e avaliações."),
+        e("p", null, "Escolha sua peça favorita, veja fotos em detalhe e monte seu pedido de forma rápida."),
       ),
       statusText
         ? e("p", { id: "data-status", className: "data-status", role: "status", "aria-live": "polite" }, statusText)
